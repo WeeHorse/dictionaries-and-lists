@@ -1,0 +1,7 @@
+quick;rápido
+rapid;rápido
+happy;feliz
+big;grande
+large;grande
+dog;perro
+cat;gato

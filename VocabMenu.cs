@@ -1,41 +1,11 @@
 class VocabMenu
 {
-  Dictionary<string, List<Word>> fromSwedishToEnglish;
-  Dictionary<string, List<Word>> fromEnglishToSwedish;
+  List<Word>? selectedWordList;
   Dictionary<string, List<Word>>? selectedDictionary;
-
-  string selectedFromLanguage = "";
-  string selectedToLanguage = "";
-
+  string filePath = "";
   bool reverseTranslation = false;
 
-  public VocabMenu(List<Word> words)
-  {
-    // Ingen datatyp här – vi tilldelar klassens fält.
-    fromSwedishToEnglish = words
-    .Where(word => word.FromLanguage == "swedish")
-    .Where(word => word.ToLanguage == "english")
-    .GroupBy(word => word.WordFromLanguage)
-    .ToDictionary(
-        group => group.Key,
-        group => group.ToList(),
-        StringComparer.OrdinalIgnoreCase
-    );
-
-    fromEnglishToSwedish = words
-        .Where(word => word.FromLanguage == "swedish")
-        .Where(word => word.ToLanguage == "english")
-        .GroupBy(word => word.WordToLanguage)
-        .ToDictionary(
-            group => group.Key,
-            group => group.ToList(),
-            StringComparer.OrdinalIgnoreCase
-        );
-
-    RunMenu();
-  }
-
-  void RunMenu()
+  public VocabMenu()
   {
     bool isRunning = true;
 
@@ -83,17 +53,13 @@ class VocabMenu
     switch (choice)
     {
       case "1":
-        selectedDictionary = fromSwedishToEnglish;
         reverseTranslation = false;
-        selectedFromLanguage = "svenska";
-        selectedToLanguage = "engelska";
+        filePath = "wordlists/swedish-english.txt";
         break;
 
       case "2":
-        selectedDictionary = fromEnglishToSwedish;
         reverseTranslation = true;
-        selectedFromLanguage = "engelska";
-        selectedToLanguage = "svenska";
+        filePath = "wordlists/swedish-english.txt";
         break;
 
       default:
@@ -101,9 +67,22 @@ class VocabMenu
         return;
     }
 
-    Console.WriteLine(
-        $"Valt: {selectedFromLanguage} → {selectedToLanguage}"
+    // The file is always stored as "swedish;english", regardless of direction.
+    // Reversing is done by choosing which side of the word pair to use as key.
+    selectedWordList = LoadWords(filePath, "swedish", "english");
+    selectedDictionary = selectedWordList
+    .GroupBy(word => reverseTranslation ? word.WordToLanguage : word.WordFromLanguage)
+    .ToDictionary(
+        group => group.Key,
+        group => group.ToList(),
+        StringComparer.OrdinalIgnoreCase
     );
+
+    // foreach (var word in selectedWordList)
+    // {
+    //   Console.WriteLine($"{word.FromLanguage}: {word.WordFromLanguage} => {word.ToLanguage}: {word.WordToLanguage}");
+    // }
+
   }
 
   void TranslateWord()
@@ -114,7 +93,7 @@ class VocabMenu
       return;
     }
 
-    Console.Write($"\nAnge ett ord på {selectedFromLanguage}: ");
+    Console.Write($"\nAnge ett ord att översätta: ");
     string? searchWord = Console.ReadLine();
 
     if (string.IsNullOrWhiteSpace(searchWord))
@@ -127,7 +106,7 @@ class VocabMenu
         searchWord.Trim(),
         out List<Word>? matches))
     {
-      Console.WriteLine($"Översättning till {selectedToLanguage}:");
+      Console.WriteLine($"Översättning:");
 
       foreach (Word match in matches)
       {
@@ -146,4 +125,28 @@ class VocabMenu
       Console.WriteLine($"Ordet \"{searchWord}\" hittades inte.");
     }
   }
+
+  public List<Word> LoadWords(string filePath, string fromLanguage, string toLanguage)
+  {
+    List<Word> words = [];
+
+    string[] lines = File.ReadAllLines(filePath);
+
+    foreach (string line in lines)
+    {
+      string[] parts = line.Split(';');
+
+      Word word = new(
+          fromLanguage,
+          parts[0],
+          toLanguage,
+          parts[1]
+      );
+
+      words.Add(word);
+    }
+
+    return words;
+  }
+
 }

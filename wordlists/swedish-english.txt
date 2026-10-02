@@ -1,0 +1,10 @@
+snabb;fast
+snabb;quick
+snabb;rapid
+glad;happy
+stor;big
+stor;large
+hund;dog
+katt;cat
+snabb;speedy
+glad;glad

@@ -1,0 +1,6 @@
+snabb;veloce
+snabb;rapido
+glad;felice
+stor;grande
+hund;cane
+katt;gatto
